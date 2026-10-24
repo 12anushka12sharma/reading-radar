@@ -43,6 +43,12 @@ DIGEST_MAX_ITEMS = 24        # hard cap, so the digest stays readable in one sit
 DIGEST_MIN_SCORE = 1.6       # below this an item is noise, however fresh
 SEEN_RETENTION_DAYS = 45     # how long seen.json remembers a URL before forgetting it
 MAX_PER_SOURCE = 6           # stops one chatty feed from eating the whole digest
+# Slots each enabled topic gets before the rest of the digest is filled by raw
+# score. Without this the heaviest topic crowds the others out entirely: a
+# weight-3.0 topic producing twenty items at 3-5 left the weight-1.5 science
+# topics scoring 2.0 permanently invisible, which looks like a broken feed
+# rather than a working ranking. 0 restores pure global ranking.
+RESERVED_PER_TOPIC = 2
 HTTP_TIMEOUT = 25
 HTTP_WORKERS = 8             # feeds are fetched in parallel; keep modest to stay polite
 
@@ -62,11 +68,23 @@ RSS_FEEDS = [
     ("Nature — news",          "https://www.nature.com/nature.rss",                                 1.30),
     ("Science — news",         "https://www.science.org/rss/news_current.xml",                      1.30),
     ("Phys.org",               "https://phys.org/rss-feed/",                                        0.85),
-    ("ScienceDaily",           "https://www.sciencedaily.com/rss/top/science.xml",                  0.80),
+    ("ScienceDaily",           "https://www.sciencedaily.com/rss/top/science.xml",                  1.00),
     ("MIT Technology Review",  "https://www.technologyreview.com/feed/",                            1.15),
     ("Ars Technica",           "https://feeds.arstechnica.com/arstechnica/index",                   1.00),
 
-    # --- life science / biotech (BS Biotechnology, Velbiom probiotics) -----
+    # --- the rest of science (added 2026-10-24: "I like all kinds of science")
+    # Low volume by design — 8-15 items each — so breadth costs almost nothing
+    # per run while covering physics, space, chemistry, earth and climate,
+    # which the original list reached only through Quanta and general news.
+    ("Nature Physics",         "https://www.nature.com/nphys.rss",                                  1.25),
+    ("Nature Astronomy",       "https://www.nature.com/natastron.rss",                              1.25),
+    ("Nature Chemistry",       "https://www.nature.com/nchem.rss",                                  1.25),
+    ("Nature Climate Change",  "https://www.nature.com/nclimate.rss",                               1.25),
+    ("Eos — earth science",    "https://eos.org/feed",                                              1.00),
+    ("NASA",                   "https://www.nasa.gov/rss/dyn/breaking_news.rss",                    1.00),
+    ("New Scientist",          "https://www.newscientist.com/feed/home/",                           1.00),
+
+    # --- life science / biotech ------------------------------------------
     ("bioRxiv — new results",  "https://connect.biorxiv.org/biorxiv_xml.php?subject=all",           1.05),
     ("Nature Biotechnology",   "https://www.nature.com/nbt.rss",                                    1.20),
     ("STAT News",              "https://www.statnews.com/feed/",                                    0.95),

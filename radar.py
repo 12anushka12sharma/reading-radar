@@ -248,7 +248,7 @@ def from_rss(spec, cutoff):
         title, summary = strip_boilerplate(title, summary)
         if not title:
             continue
-        items.append({"title": title, "url": link, "summary": summary[:600],
+        items.append({"title": title, "url": link, "summary": summary[:1400],
                       "published": pub, "source": name, "kind": "blog",
                       "source_weight": weight, "extra": {}})
     return items
@@ -266,7 +266,7 @@ def from_arxiv(category, cutoff):
     for title, link, pub, summary in parse_feed(fetch(f"http://export.arxiv.org/api/query?{q}")):
         if pub and pub < cutoff:
             continue
-        items.append({"title": title, "url": link, "summary": summary[:600],
+        items.append({"title": title, "url": link, "summary": summary[:1400],
                       "published": pub, "source": "arXiv", "kind": "paper",
                       "source_weight": 1.25, "extra": {"category": category}})
     return items
@@ -327,7 +327,7 @@ def from_google_news(query, cutoff):
             summary = ""
 
         items.append({"title": clean_title,
-                      "url": link, "summary": summary[:400], "published": pub,
+                      "url": link, "summary": summary[:1400], "published": pub,
                       "source": f"News · {src_name or publisher}", "kind": "news",
                       "source_weight": 0.85,
                       # The link above is a Google redirect. Carry the publisher
@@ -395,6 +395,65 @@ def score_item(item, interests):
         total *= max(0.5, 1.0 - 0.012 * age_h)
 
     return round(total, 2), topics, sorted(set(hits))
+
+
+def primary_topic(item, interests):
+    """The item's strongest topic — the same rule the digest groups by."""
+    order = [t["name"] for t in sorted(interests["topics"],
+                                       key=lambda t: -t.get("weight", 0))]
+    rank = {n: i for i, n in enumerate(order)}
+    tops = item.get("topics") or []
+    return min(tops, key=lambda t: rank.get(t, 99)) if tops else "other"
+
+
+def select(items, interests):
+    """Choose the digest in two passes: reserved slots first, then by score.
+
+    A single global top-N ranking lets the heaviest topic crowd everything
+    else out. With llm_agents at weight 3.0 producing twenty items scoring
+    3-5, a weight-1.5 biotech item at 2.0 never made the cut — the science
+    topics were enabled and scoring and still produced nothing for days,
+    which reads as "the feeds are broken" rather than "the ranking is working
+    as designed".
+
+    So each enabled topic first gets up to RESERVED_PER_TOPIC of its own best
+    items, and only then is the remainder filled by global score. Items still
+    have to clear DIGEST_MIN_SCORE to be here at all, so this widens the range
+    of what appears without lowering the bar for what qualifies.
+    """
+    by_score = sorted(items, key=lambda i: -i["score"])
+    per_source, chosen, taken = {}, [], set()
+    cap = config.DIGEST_MAX_ITEMS
+
+    def take(it):
+        """Respect the per-source cap in both passes, not just the second."""
+        n = per_source.get(it["source"], 0)
+        if n >= config.MAX_PER_SOURCE or id(it) in taken:
+            return False
+        per_source[it["source"]] = n + 1
+        taken.add(id(it))
+        chosen.append(it)
+        return True
+
+    # Pass 1 — reserved slots, strongest topics first so that if the digest is
+    # small the heavy topics still lead.
+    for topic in [t["name"] for t in sorted(interests["topics"],
+                                            key=lambda t: -t.get("weight", 0))
+                  if t.get("enabled", True)]:
+        got = 0
+        for it in by_score:
+            if got >= config.RESERVED_PER_TOPIC or len(chosen) >= cap:
+                break
+            if primary_topic(it, interests) == topic and take(it):
+                got += 1
+
+    # Pass 2 — fill whatever is left purely by score.
+    for it in by_score:
+        if len(chosen) >= cap:
+            break
+        take(it)
+
+    return sorted(chosen, key=lambda i: -i["score"])
 
 
 # ---------------------------------------------------------------------------
@@ -564,16 +623,7 @@ def main():
         deduped = [i for i in deduped if canonical(i["url"]) not in seen]
         print(f"  {len(deduped)} new ({before - len(deduped)} already sent in a past digest)")
 
-    # Cap per source so one chatty feed can't fill the digest.
-    per_source, final = {}, []
-    for it in sorted(deduped, key=lambda i: -i["score"]):
-        n = per_source.get(it["source"], 0)
-        if n >= config.MAX_PER_SOURCE:
-            continue
-        per_source[it["source"]] = n + 1
-        final.append(it)
-        if len(final) >= config.DIGEST_MAX_ITEMS:
-            break
+    final = select(deduped, interests)
 
     for it in final:
         it["published"] = it["published"].isoformat() if it["published"] else None

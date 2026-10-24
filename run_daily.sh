@@ -3,8 +3,9 @@
 #
 # Scheduling: the simplest route is GitHub Actions (see
 # .github/workflows/daily.yml), which needs no machine of your own awake.
-# Locally on macOS, prefer launchd over cron: launchd runs a missed job when
-# the Mac wakes, cron silently skips any run where the laptop was asleep.
+# section of README.md. launchd is used rather than cron because it runs a
+# missed job when the Mac wakes; cron silently skips any run where the laptop
+# was asleep, which on a laptop is most mornings.
 #
 # Logs append to run.log in this folder (gitignored).
 #
