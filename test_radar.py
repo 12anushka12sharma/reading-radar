@@ -277,16 +277,20 @@ def test_repo_carries_no_personal_data():
     # first run this test flagged itself, which is funny once and useless after.
     # Split so the marker strings do not appear literally in this file — on the
     # first run this test flagged itself, which is funny once and useless after.
-    # 'velbiom' is here because it was NOT in the original list and shipped in a
-    # config.py comment to the public repo for several hours before anyone
-    # noticed. Add a former employer, client or vendor here the moment it comes
-    # up, not after.
+    # The list is the weak point: it only catches what it was told about. One
+    # former-employer name was missing here and shipped in a config.py comment
+    # to this public repo, where it sat for hours. Add an employer, client or
+    # vendor the moment it comes up, not after.
+    # Keep every entry split — writing one out in full makes this file fail
+    # its own check, which already happened twice.
     markers = tuple(a + b for a, b in (
         ("aeo", "bird"), ("datafor", "seo"), ("squad", "stack"),
         ("bite", "speed"), ("lime", "chat"), ("mama", "earth"),
         ("hon", "asa"), ("anu", "shka"), ("customer", "mates"),
-        ("vel", "biom"), ("unicom", "merce"), ("fresh", "desk"),
-        ("ozone", "tel"),
+        ("vel", "biom"), ("unicom", "merce"), ("ozone", "tel"),
+        # NB: not 'freshdesk' / 'zendesk' / 'intercom' — those are generic
+        # support-tool vocabulary and belong in the cx_automation keyword list.
+        # A marker has to identify a person, not name a product they use.
     ))
     for path in HERE.rglob("*"):
         if not path.is_file() or ".git/" in str(path):
