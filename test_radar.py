@@ -275,10 +275,18 @@ def test_repo_carries_no_personal_data():
     """
     # Split so the marker strings do not appear literally in this file — on the
     # first run this test flagged itself, which is funny once and useless after.
+    # Split so the marker strings do not appear literally in this file — on the
+    # first run this test flagged itself, which is funny once and useless after.
+    # 'velbiom' is here because it was NOT in the original list and shipped in a
+    # config.py comment to the public repo for several hours before anyone
+    # noticed. Add a former employer, client or vendor here the moment it comes
+    # up, not after.
     markers = tuple(a + b for a, b in (
         ("aeo", "bird"), ("datafor", "seo"), ("squad", "stack"),
         ("bite", "speed"), ("lime", "chat"), ("mama", "earth"),
         ("hon", "asa"), ("anu", "shka"), ("customer", "mates"),
+        ("vel", "biom"), ("unicom", "merce"), ("fresh", "desk"),
+        ("ozone", "tel"),
     ))
     for path in HERE.rglob("*"):
         if not path.is_file() or ".git/" in str(path):
