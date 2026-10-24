@@ -1,0 +1,124 @@
+{
+  "_provenance": "STARTER PROFILE — generic, not derived from anyone's history. Copy to interests.json and edit, or better, run history_profile.py against your own browser and merge the proposal it writes. A profile built from what you actually read beats a hand-written one every time.",
+  "_how_scoring_works": "An item's score = sum over matching topics of (weight x keyword-density bonus) x source trust x recency decay. An item matching NO topic is dropped, which is what keeps random noise out. Anything matching a global mute term is dropped outright. A topic may also declare require_any: at least one of those must match before the topic fires at all. It exists for include lists holding words that are only domain-specific in context — 'agent', 'benchmark' and 'evaluation' are LLM terms in an LLM article and ordinary English in a biology paper. Topics without require_any are unaffected.",
+  "weights_guide": "3.0 = core, read every day. 2.0 = strong. 1.0 = adjacent, only if the item is excellent. 0 or enabled:false = off.",
+  "topics": [
+    {
+      "name": "llm_agents",
+      "label": "LLM agents, evals and context engineering",
+      "weight": 3.0,
+      "enabled": true,
+      "include": [
+        "llm", "large language model", "agent", "agentic", "rag",
+        "retrieval augmented", "context window", "context engineering", "prompt",
+        "tool use", "function calling", "mcp", "model context protocol", "eval",
+        "benchmark", "hallucination", "fine-tuning", "reasoning model",
+        "multi-agent", "evaluation", "hugging face", "claude code", "system card"
+      ],
+      "require_any": [
+        "llm", "large language model", "language model", "agentic", "ai agent",
+        "multi-agent", "gpt", "claude", "gemini", "llama", "mistral", "deepseek",
+        "openai", "anthropic", "deepmind", "chatbot", "transformer",
+        "machine learning", "neural network", "rag", "mcp", "prompt",
+        "inference", "fine-tuning", "hugging face", "reasoning model"
+      ],
+      "boost": ["production", "cost", "latency", "reliability", "failure mode", "case study"],
+      "mute": [
+        "crypto", "token price", "airdrop", "therapeutic agent", "chemotherapeutic",
+        "contrast agent", "antimicrobial agent", "reducing agent"
+      ],
+      "queries": [
+        "LLM agent evaluation",
+        "context engineering LLM",
+        "retrieval augmented generation production"
+      ]
+    },
+    {
+      "name": "ml_research",
+      "label": "ML research — architectures, interpretability, training",
+      "weight": 2.0,
+      "enabled": true,
+      "include": [
+        "transformer", "attention mechanism", "neural network", "deep learning",
+        "reinforcement learning", "rlhf", "interpretability",
+        "mechanistic interpretability", "diffusion model", "scaling law",
+        "distillation", "quantization", "mixture of experts", "state space model",
+        "self-supervised", "pretraining", "post-training"
+      ],
+      "boost": ["ablation", "open weights", "reproducible", "surprising"],
+      "mute": [],
+      "queries": ["mechanistic interpretability", "LLM scaling laws", "efficient inference"]
+    },
+    {
+      "name": "hard_science",
+      "label": "Physics, neuroscience, climate, mathematics",
+      "weight": 2.0,
+      "enabled": true,
+      "include": [
+        "quantum computing", "quantum", "astrophysics", "cosmology", "black hole",
+        "exoplanet", "neuroscience", "cognition", "climate science", "mathematics",
+        "number theory", "materials science", "superconductor", "nuclear fusion"
+      ],
+      "boost": ["proof", "experiment", "measurement", "replicated"],
+      "mute": ["horoscope", "astrology"],
+      "queries": ["quantum computing milestone", "neuroscience memory", "fusion energy result"]
+    },
+    {
+      "name": "biotech_life_science",
+      "label": "Biotech, genomics and life sciences",
+      "weight": 2.0,
+      "enabled": true,
+      "include": [
+        "biotech", "microbiome", "probiotic", "genomics", "crispr", "gene editing",
+        "protein folding", "alphafold", "clinical trial", "immunology",
+        "drug discovery", "synthetic biology", "molecular biology", "proteomics"
+      ],
+      "boost": ["human trial", "mechanism", "replication", "peer reviewed"],
+      "mute": ["supplement deal", "wellness influencer"],
+      "queries": ["gut microbiome research", "protein design machine learning", "CRISPR clinical"]
+    },
+    {
+      "name": "devtools_eng",
+      "label": "Programming, data and engineering craft",
+      "weight": 1.5,
+      "enabled": true,
+      "include": [
+        "python", "duckdb", "pandas", "sql", "data pipeline", "api design",
+        "observability", "system design", "developer experience", "open source release",
+        "rust", "typescript", "postgres"
+      ],
+      "boost": ["analysis", "performance", "practical", "postmortem"],
+      "mute": ["bootcamp", "tutorial for beginners"],
+      "queries": ["python data tooling", "system design practical"]
+    },
+    {
+      "name": "product_craft",
+      "label": "Product management craft",
+      "weight": 1.0,
+      "enabled": true,
+      "include": [
+        "product management", "product manager", "roadmap", "product discovery",
+        "user research", "a/b test", "experimentation", "pricing strategy",
+        "retention", "north star metric", "jobs to be done"
+      ],
+      "boost": ["ai product", "case study", "metrics", "teardown"],
+      "mute": [
+        "course", "cohort", "masterclass", "certification", "hiring",
+        "job description", "apply now", "years of experience"
+      ],
+      "queries": ["AI product management case study", "product experimentation metrics"]
+    }
+  ],
+  "mute": [
+    "horoscope", "astrology", "cricket score", "box office", "celebrity",
+    "weight loss", "crypto price", "bitcoin price", "nft", "airdrop", "memecoin",
+    "coupon", "discount code", "flash sale", "hiring now", "webinar registration",
+    "sponsored", "advertorial", "giveaway", "job description", "apply now"
+  ],
+  "prefer_sources": [
+    "Quanta Magazine", "Nature — news", "Science — news", "arXiv",
+    "Simon Willison", "DeepMind", "Google Research"
+  ],
+  "demote_sources": ["Machine Learning Mastery", "Phys.org"],
+  "_matching_note": "Keywords match on word boundaries with plural/-ed/-ing tolerance only: 'agent' matches 'agents', but 'eval' does NOT match 'evaluated'. That strictness is deliberate — looser matching made 'rag' hit 'storage'. Add word variants explicitly rather than loosening the regex."
+}

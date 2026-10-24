@@ -1,0 +1,19 @@
+# Derived from your reading. None of this belongs in a repo.
+items.json
+digest.html
+digest.md
+library.html
+interests.derived.json
+history_report.md
+run.log
+.env
+
+# seen.json and archive.jsonl are the pipeline's memory. They stay local by
+# default; the GitHub Actions workflow force-adds them so a scheduled run
+# remembers what it already sent.
+seen.json
+archive.jsonl
+
+.DS_Store
+__pycache__/
+*.pyc

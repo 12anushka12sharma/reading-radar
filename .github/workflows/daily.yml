@@ -1,0 +1,78 @@
+# Daily Reading Radar, run by GitHub Actions and published to GitHub Pages.
+#
+# THIS FILE IS INERT WHERE IT SITS. It lives under work/reading-radar/templates/
+# on purpose: a workflow only runs when it is at .github/workflows/ in the repo
+# root, and this repo is private and must not spend Actions minutes on it.
+#
+# To use it, in the PUBLIC template repo only:
+#   mkdir -p .github/workflows && cp templates/daily.yml .github/workflows/
+#   git add .github/workflows/daily.yml && git commit && git push
+# Then: Settings > Pages > Source = "GitHub Actions".
+#
+# Free tier: Actions is unlimited for public repos. A run takes ~3 minutes.
+name: Daily digest
+
+on:
+  schedule:
+    # 07:30 IST = 02:00 UTC. GitHub cron is always UTC, and may fire up to
+    # ~15 minutes late under load — it is a scheduler, not an alarm clock.
+    - cron: "0 2 * * *"
+  workflow_dispatch:        # lets you trigger a run by hand from the Actions tab
+
+permissions:
+  contents: write           # to commit the archive back
+  pages: write              # to publish
+  id-token: write
+
+concurrency:
+  group: daily-digest
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # No pip install step, and that is the point: the pipeline is stdlib only.
+
+      - name: Self-check
+        run: python3 test_matching.py
+
+      - name: Fetch, score and render
+        run: |
+          python3 radar.py
+          python3 digest.py
+
+      - name: Assemble the site
+        run: |
+          mkdir -p _site
+          cp digest.html _site/index.html
+          cp library.html _site/library.html
+
+      # seen.json and archive.jsonl are the memory: without committing them
+      # back, every run would start blank and re-surface the same items daily.
+      - name: Persist memory
+        run: |
+          git config user.name  "reading-radar"
+          git config user.email "actions@users.noreply.github.com"
+          git add -f seen.json archive.jsonl
+          git diff --cached --quiet || git commit -m "archive: $(date -u +%F)"
+          git push
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
